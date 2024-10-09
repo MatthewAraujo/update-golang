@@ -1,62 +1,84 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/spf13/cobra"
 )
 
-// Root command
+var (
+	versionFlag string
+)
+
 var rootCmd = &cobra.Command{
 	Use:   "update-golang",
 	Short: "A CLI tool to update your Go installation",
-	Long:  `This CLI tool downloads the latest or specified version of Go, removes the old version, and installs the new version.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		version, _ := cmd.Flags().GetString("version")
-		if version == "" {
-			pageContent := fetchPage("https://go.dev/dl/")
-			line := findTargetLine(pageContent, `class="toggleVisible"`)
-			if line == "" {
-				log.Fatal("Target not found.")
+	Long:  `This CLI tool downloads the latest or specified version of Go, removes the old version, and installs the new one.`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+		defer cancel()
+
+		var version string
+		if versionFlag == "" {
+			pageContent, err := fetchPage(ctx, GoDownloadPageURL)
+			if err != nil {
+				return fmt.Errorf("error fetching Go download page: %w", err)
 			}
-			version = extractGoVersion(line)
+
+			line, err := findTargetLine(pageContent, `class="toggleVisible"`)
+			if err != nil {
+				return fmt.Errorf("error finding target line: %w", err)
+			}
+
+			version, err = extractGoVersion(line)
+			if err != nil {
+				return fmt.Errorf("error extracting Go version: %w", err)
+			}
+		} else {
+			version = versionFlag
+			log.Printf("Using specified version: %s", version)
 		}
 
 		log.Printf("Installing Go version: %s", version)
 
-		downloadURL := fmt.Sprintf("https://go.dev/dl/%v.linux-amd64.tar.gz", version)
-		filePath := version + ".linux-amd64.tar.gz"
+		downloadURL := fmt.Sprintf("https://golang.org/dl/%s.linux-amd64.tar.gz", version)
+		filePath := fmt.Sprintf("%s.linux-amd64.tar.gz", version)
 
+		// Download Go tarball if it doesn't exist
 		if _, err := os.Stat(filePath); os.IsNotExist(err) {
-			if err := downloadFile(downloadURL, filePath); err != nil {
-				log.Fatalf("Error downloading the file: %v", err)
+			if err := downloadFile(ctx, downloadURL, filePath); err != nil {
+				return fmt.Errorf("error downloading file: %w", err)
 			}
+		} else {
+			log.Printf("File %s already exists. Skipping download.", filePath)
 		}
 
-		goInstallDir := "/usr/local/go"
-		if err := removeOldGoFolder(goInstallDir); err != nil {
-			log.Fatalf("Error removing old Go folder: %v", err)
+		// Remove the old Go installation
+		if err := removeOldGoFolder(DefaultGoInstallDir); err != nil {
+			return fmt.Errorf("error removing the old Go installation: %w", err)
 		}
 
+		// Extract the tarball to /usr/local
 		if err := extractTarGz(filePath, "/usr/local"); err != nil {
-			log.Fatalf("Error extracting file: %v", err)
+			return fmt.Errorf("error extracting the file: %w", err)
 		}
 
-		log.Println("Go installation updated successfully.")
+		log.Println("Go installation successfully updated.")
+		return nil
 	},
 }
 
-// Execute the root command
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Fatalf("Error executing the command: %v", err)
 	}
 }
 
 func init() {
-	// Adding a flag for Go version
-	rootCmd.Flags().StringP("version", "v", "", "Specify the Go version to install (e.g., go1.18). If not provided, the latest version will be used.")
+	// Set the flag to specify the Go version
+	rootCmd.Flags().StringVarP(&versionFlag, "version", "v", "", "Specify the Go version to install (e.g., go1.18). If not provided, the latest version will be used.")
 }
