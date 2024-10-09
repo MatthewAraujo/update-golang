@@ -15,13 +15,11 @@ import (
 	"strings"
 )
 
-// Constants to facilitate configuration
 const (
 	GoDownloadPageURL   = "https://go.dev/dl/"
 	DefaultGoInstallDir = "/usr/local/go"
 )
 
-// extractTarGz extracts a .tar.gz file to the specified destination directory.
 func extractTarGz(gzipPath, destDir string) error {
 	log.Printf("Extracting %s to %s", gzipPath, destDir)
 
@@ -57,7 +55,6 @@ func extractTarGz(gzipPath, destDir string) error {
 				return fmt.Errorf("error creating directory %s: %w", targetPath, err)
 			}
 		case tar.TypeReg:
-			// Ensure the directory exists
 			if err := os.MkdirAll(filepath.Dir(targetPath), 0755); err != nil {
 				return fmt.Errorf("error creating directory for file %s: %w", targetPath, err)
 			}
@@ -67,13 +64,11 @@ func extractTarGz(gzipPath, destDir string) error {
 				return fmt.Errorf("error creating file %s: %w", targetPath, err)
 			}
 
-			// Copy data
 			if _, err := io.Copy(outFile, tarReader); err != nil {
 				outFile.Close()
 				return fmt.Errorf("error writing to file %s: %w", targetPath, err)
 			}
 
-			// Close the file after copying
 			if err := outFile.Close(); err != nil {
 				return fmt.Errorf("error closing file %s: %w", targetPath, err)
 			}
@@ -92,7 +87,6 @@ func extractTarGz(gzipPath, destDir string) error {
 	return nil
 }
 
-// removeOldGoFolder removes the old Go installation.
 func removeOldGoFolder(dirPath string) error {
 	log.Printf("Removing old Go folder: %s", dirPath)
 	err := os.RemoveAll(dirPath)
@@ -102,11 +96,9 @@ func removeOldGoFolder(dirPath string) error {
 	return nil
 }
 
-// downloadFile downloads a file from a URL to a local path.
 func downloadFile(ctx context.Context, url, filePath string) error {
 	log.Printf("Downloading file from %s", url)
 
-	// Create a request with context
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return fmt.Errorf("error creating HTTP request: %w", err)
@@ -132,7 +124,6 @@ func downloadFile(ctx context.Context, url, filePath string) error {
 		}
 	}()
 
-	// Copy data with a reasonable buffer size
 	buf := make([]byte, 32*1024) // 32KB
 	_, err = io.CopyBuffer(out, resp.Body, buf)
 	if err != nil {
@@ -142,7 +133,6 @@ func downloadFile(ctx context.Context, url, filePath string) error {
 	return nil
 }
 
-// findTargetLine finds the line that contains the target string in the content.
 func findTargetLine(content, target string) (string, error) {
 	lines := strings.Split(content, "\n")
 	for i, line := range lines {
@@ -154,9 +144,7 @@ func findTargetLine(content, target string) (string, error) {
 	return "", errors.New("target not found in the provided lines")
 }
 
-// fetchPage performs an HTTP GET request to the provided URL and returns the response body as a string.
 func fetchPage(ctx context.Context, url string) (string, error) {
-	// Create a request with context
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return "", fmt.Errorf("error creating HTTP request: %w", err)
@@ -180,9 +168,7 @@ func fetchPage(ctx context.Context, url string) (string, error) {
 	return string(body), nil
 }
 
-// extractGoVersion extracts the Go version from the provided line using regex.
 func extractGoVersion(line string) (string, error) {
-	// Regular expression to capture the Go version, e.g., go1.23.2
 	re := regexp.MustCompile(`go\d+\.\d+\.\d+`)
 	match := re.FindString(line)
 	if match == "" {

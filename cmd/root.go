@@ -57,12 +57,10 @@ var rootCmd = &cobra.Command{
 			log.Printf("File %s already exists. Skipping download.", filePath)
 		}
 
-		// Remove the old Go installation
 		if err := removeOldGoFolder(DefaultGoInstallDir); err != nil {
 			return fmt.Errorf("error removing the old Go installation: %w", err)
 		}
 
-		// Extract the tarball to /usr/local
 		if err := extractTarGz(filePath, "/usr/local"); err != nil {
 			return fmt.Errorf("error extracting the file: %w", err)
 		}
@@ -79,6 +77,5 @@ func Execute() {
 }
 
 func init() {
-	// Set the flag to specify the Go version
 	rootCmd.Flags().StringVarP(&versionFlag, "version", "v", "", "Specify the Go version to install (e.g., go1.18). If not provided, the latest version will be used.")
 }
