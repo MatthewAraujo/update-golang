@@ -12,70 +12,9 @@ import (
 	"strings"
 )
 
-func fetchPage(url string) string {
-	resp, err := http.Get(url)
-	if err != nil {
-		log.Fatal("Error requesting Go page:", err)
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal("Error reading the response:", err)
-	}
-	return string(body)
-}
-
-func findTargetLine(content, target string) string {
-	lines := strings.Split(content, "\n")
-	for _, line := range lines {
-		if strings.Contains(line, target) {
-			return line
-		}
-	}
-	return ""
-}
-
-func extractGoVersion(text string) string {
-	version := strings.Fields(text)
-	if len(version) > 0 {
-		version = strings.Split(version[2], `"`)
-		return version[1]
-	}
-	log.Println("No version found in the provided text.")
-	return ""
-}
-
-func downloadFile(url string, filePath string) error {
-	resp, err := http.Get(url)
-	if err != nil {
-		return fmt.Errorf("error making GET request: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("failed to download file: %s", resp.Status)
-	}
-
-	out, err := os.Create(filePath)
-	if err != nil {
-		return fmt.Errorf("error creating file: %v", err)
-	}
-	defer out.Close()
-
-	_, err = io.Copy(out, resp.Body)
-	if err != nil {
-		return fmt.Errorf("error saving file: %v", err)
-	}
-
-	return nil
-}
-
-func removeOldGoFolder(dirPath string) error {
-	return os.RemoveAll(dirPath)
-}
-
 func extractTarGz(gzipPath, destDir string) error {
+	log.Printf("Extracting %s to %s", gzipPath, destDir)
+
 	file, err := os.Open(gzipPath)
 	if err != nil {
 		return fmt.Errorf("error opening file: %v", err)
@@ -116,8 +55,86 @@ func extractTarGz(gzipPath, destDir string) error {
 			if _, err := io.Copy(outFile, tarReader); err != nil {
 				return fmt.Errorf("error writing file: %v", err)
 			}
+
+			// Set permissions for executables
+			if filepath.Ext(targetPath) == "" {
+				if err := os.Chmod(targetPath, 0755); err != nil {
+					return fmt.Errorf("error setting executable permissions: %v", err)
+				}
+			}
+		default:
+			log.Printf("Skipping unknown type: %c in %s", header.Typeflag, targetPath)
 		}
+	}
+	return nil
+}
+
+func removeOldGoFolder(dirPath string) error {
+	log.Printf("Removing old Go folder: %s", dirPath)
+	return os.RemoveAll(dirPath)
+}
+
+func downloadFile(url, filePath string) error {
+	log.Printf("Downloading file from %s", url)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return fmt.Errorf("error downloading file: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("failed to download file: %s", resp.Status)
+	}
+
+	out, err := os.Create(filePath)
+	if err != nil {
+		return fmt.Errorf("error creating file: %v", err)
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return fmt.Errorf("error saving file: %v", err)
 	}
 
 	return nil
+}
+
+func findTargetLine(content, target string) string {
+	lines := strings.Split(content, "\n")
+	for i, line := range lines {
+		if strings.Contains(line, target) {
+			log.Printf("Target found in line %d: %s", i+1, line)
+			return line
+		}
+	}
+	return ""
+}
+
+func fetchPage(url string) string {
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Fatalf("Error requesting Go page: %v", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalf("Error reading response: %v", err)
+	}
+	return string(body)
+}
+
+func extractGoVersion(line string) string {
+	fields := strings.Fields(line)
+	if len(fields) > 0 {
+		versionField := strings.Split(fields[2], `"`)
+		if len(versionField) > 1 {
+			log.Printf("Go version found: %s", versionField[1])
+			return versionField[1]
+		}
+	}
+	log.Fatal("Failed to extract Go version.")
+	return ""
 }

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/MatthewAraujo/go-update/cmd"
+	"github.com/MatthewAraujo/update-golang/cmd"
 )
 
 func main() {
