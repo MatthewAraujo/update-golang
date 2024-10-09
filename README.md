@@ -4,10 +4,7 @@
 
 ## Demo Video
 
-<video width="600" controls>
-  <source src="demo.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+[Watch the demo video](https://drive.google.com/file/d/1RfJe9IazW80lA8Os4hovXiKU3-yyzZmr/view?usp=drive_link)
 
 ## Features
 
