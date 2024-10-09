@@ -10,9 +10,12 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/user"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/schollz/progressbar/v3"
 )
 
 const (
@@ -37,6 +40,19 @@ func extractTarGz(gzipPath, destDir string) error {
 
 	tarReader := tar.NewReader(gzipReader)
 
+	totalFiles, err := countFilesInTar(tarReader)
+	if err != nil {
+		return fmt.Errorf("error counting files in tar: %w", err)
+	}
+
+	// Reset tar reader after counting files
+	file.Seek(0, 0) // Go back to the start of the file
+	gzipReader.Reset(file)
+	tarReader = tar.NewReader(gzipReader)
+
+	// Create a progress bar for extraction
+	bar := progressbar.Default(int64(totalFiles), "extracting")
+
 	for {
 		header, err := tarReader.Next()
 		if err == io.EOF {
@@ -47,6 +63,8 @@ func extractTarGz(gzipPath, destDir string) error {
 			return fmt.Errorf("error reading tar file: %w", err)
 		}
 
+		// Update the progress bar
+		bar.Add(1)
 		targetPath := filepath.Join(destDir, header.Name)
 
 		switch header.Typeflag {
@@ -110,6 +128,11 @@ func downloadFile(ctx context.Context, url, filePath string) error {
 	}
 	defer resp.Body.Close()
 
+	bar := progressbar.DefaultBytes(
+		resp.ContentLength,
+		"downloading",
+	)
+
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to download file: %s", resp.Status)
 	}
@@ -123,6 +146,12 @@ func downloadFile(ctx context.Context, url, filePath string) error {
 			err = cerr
 		}
 	}()
+
+	// Write the body to file with progress
+	_, err = io.Copy(io.MultiWriter(out, bar), resp.Body)
+	if err != nil {
+		return err
+	}
 
 	buf := make([]byte, 32*1024) // 32KB
 	_, err = io.CopyBuffer(out, resp.Body, buf)
@@ -184,5 +213,34 @@ func removeTarGzFile(dirPath string) error {
 	if err != nil {
 		return fmt.Errorf("error removing TarGz file%s: %w", dirPath, err)
 	}
+	return nil
+}
+
+// Count files in the tar archive
+func countFilesInTar(tarReader *tar.Reader) (int, error) {
+	totalFiles := 0
+	for {
+		_, err := tarReader.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return 0, err
+		}
+		totalFiles++
+	}
+	return totalFiles, nil
+}
+
+func checkSudo() error {
+	currentUser, err := user.Current()
+	if err != nil {
+		return fmt.Errorf("error getting current user: %v", err)
+	}
+	uid := currentUser.Uid
+	if uid != "0" {
+		return fmt.Errorf("this program must be run as root. Please use sudo")
+	}
+
 	return nil
 }
