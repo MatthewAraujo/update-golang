@@ -4,7 +4,7 @@
 
 ## Demo Video
 
-[Download the demo video](https://github.com/MatthewAraujo/update-golang/blob/dev/demo.mp4)
+https://github.com/user-attachments/assets/bc3d38d4-4f08-4c09-a6e1-944805855e8f
 
 ## Features
 
