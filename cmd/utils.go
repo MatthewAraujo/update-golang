@@ -177,3 +177,12 @@ func extractGoVersion(line string) (string, error) {
 	log.Printf("Go version found: %s", match)
 	return match, nil
 }
+
+func removeTarGzFile(dirPath string) error {
+	log.Printf("Removing TarFz File: %s", dirPath)
+	err := os.Remove(dirPath)
+	if err != nil {
+		return fmt.Errorf("error removing TarGz file%s: %w", dirPath, err)
+	}
+	return nil
+}

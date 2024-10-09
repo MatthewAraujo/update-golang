@@ -65,6 +65,10 @@ var rootCmd = &cobra.Command{
 			return fmt.Errorf("error extracting the file: %w", err)
 		}
 
+		if err := removeTarGzFile(filePath); err != nil {
+			return fmt.Errorf("error removing the file: %w", err)
+		}
+
 		log.Println("Go installation successfully updated.")
 		return nil
 	},
