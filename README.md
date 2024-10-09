@@ -2,6 +2,10 @@
 
 `update-golang` is a simple CLI tool that automates the process of updating your Go installation on Linux. It fetches the latest version (or a specified version) of Go, removes the old version, and installs the new one.
 
+## Demo Video
+
+[Watch the demo video](demo.mp4)
+
 ## Features
 
 - Automatically fetches and installs the latest Go version.
