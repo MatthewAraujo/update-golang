@@ -2,6 +2,10 @@
 
 `update-golang` is a simple CLI tool that automates the process of updating your Go installation on Linux. It fetches the latest version (or a specified version) of Go, removes the old version, and installs the new one.
 
+## Demo Video
+
+https://github.com/user-attachments/assets/bc3d38d4-4f08-4c09-a6e1-944805855e8f
+
 ## Features
 
 - Automatically fetches and installs the latest Go version.
@@ -17,7 +21,13 @@ To install the `update-golang` tool, use the following command:
 go install github.com/MatthewAraujo/update-golang@latest
 ```
 
-This will place the `update-golang` binary in your `$GOPATH/bin` directory, which should be included in your system's `PATH`.
+This command will place the `update-golang` binary in your `$GOPATH/bin` directory, which should be included in your system's `PATH`.
+
+You need to run the following command with `sudo` because the tool installs the Go version into the `/usr/local/bin` directory, which requires elevated permissions to access:
+
+```bash
+sudo mv ~/go/bin/update-golang /usr/local/bin/
+```
 
 ## Usage
 
