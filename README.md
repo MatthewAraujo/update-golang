@@ -4,7 +4,7 @@
 
 ## Demo Video
 
-[Watch the demo video](https://drive.google.com/file/d/1RfJe9IazW80lA8Os4hovXiKU3-yyzZmr/view?usp=drive_link)
+[Download the demo video](https://drive.google.com/uc?id=1RfJe9IazW80lA8Os4hovXiKU3-yyzZmr)
 
 ## Features
 
