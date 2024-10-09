@@ -17,7 +17,13 @@ To install the `update-golang` tool, use the following command:
 go install github.com/MatthewAraujo/update-golang@latest
 ```
 
-This will place the `update-golang` binary in your `$GOPATH/bin` directory, which should be included in your system's `PATH`.
+This command will place the `update-golang` binary in your `$GOPATH/bin` directory, which should be included in your system's `PATH`.
+
+You need to run the following command with `sudo` because the tool installs the Go version into the `/usr/local/bin` directory, which requires elevated permissions to access:
+
+```bash
+sudo mv ~/go/bin/update-golang /usr/local/bin/
+```
 
 ## Usage
 
