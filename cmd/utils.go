@@ -231,6 +231,7 @@ func countFilesInTar(tarReader *tar.Reader) (int, error) {
 	}
 	return totalFiles, nil
 }
+
 func checkSudo() error {
 	currentUser, err := user.Current()
 	if err != nil {
