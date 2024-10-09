@@ -1,6 +1,6 @@
 # Update-Golang CLI
 
-`update-golang` is a simple CLI tool that automates the process of updating your Go installation on Linux. It fetches the latest version (or a specified version) of Go, downloads it, removes the old version, and installs the new one.
+`update-golang` is a simple CLI tool that automates the process of updating your Go installation on Linux. It fetches the latest version (or a specified version) of Go, removes the old version, and installs the new one.
 
 ## Features
 
@@ -11,25 +11,13 @@
 
 ## Installation
 
-To build and install the `update-golang` tool, follow these steps:
+To install the `update-golang` tool, use the following command:
 
-1. Clone this repository:
-    ```bash
-    git clone https://github.com/yourusername/update-golang
-    cd update-golang
-    ```
+```bash
+go install github.com/MatthewAraujo/update-golang@latest
+```
 
-2. Install Go if you haven't already. Instructions are available [here](https://golang.org/doc/install).
-
-3. Build the CLI tool:
-    ```bash
-    go build -o update-golang
-    ```
-
-4. (Optional) Move the binary to a directory in your `$PATH`:
-    ```bash
-    sudo mv update-golang /usr/local/bin/
-    ```
+This will place the `update-golang` binary in your `$GOPATH/bin` directory, which should be included in your system's `PATH`.
 
 ## Usage
 
@@ -54,13 +42,13 @@ update-golang --version go1.18
 To install the latest Go version:
 
 ```bash
-./update-golang
+update-golang
 ```
 
 To install a specific version:
 
 ```bash
-./update-golang --version go1.18
+update-golang --version go1.18
 ```
 
 ## How It Works
@@ -73,46 +61,8 @@ To install a specific version:
 ## Requirements
 
 - **Linux**: This tool is designed to work on Linux distributions.
-- **Go**: You need Go installed to build the tool.
-
-## Development
-
-### Running the CLI locally
-
-To run the tool without building a binary:
-
-```bash
-go run main.go
-```
-
-### Build
-
-To build the tool as a binary:
-
-```bash
-go build -o update-golang
-```
-
-### Testing
-
-You can pass different Go versions to test the installation:
-
-```bash
-./update-golang --version go1.16.5
-```
+- **Go**: You need Go installed to use the tool.
 
 ## Contributing
 
 Pull requests and issues are welcome! If you have any suggestions or improvements, feel free to open an issue or submit a pull request.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-```
-
-This `README.md` covers:
-
-- Introduction and features.
-- Installation and usage instructions.
-- How the tool works.
-- Contribution guidelines.
