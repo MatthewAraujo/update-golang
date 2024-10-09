@@ -22,6 +22,10 @@ var rootCmd = &cobra.Command{
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 		defer cancel()
 
+		if err := checkSudo(); err != nil {
+			return err
+		}
+
 		var version string
 		if versionFlag == "" {
 			pageContent, err := fetchPage(ctx, GoDownloadPageURL)

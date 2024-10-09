@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/user"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -229,4 +230,16 @@ func countFilesInTar(tarReader *tar.Reader) (int, error) {
 		totalFiles++
 	}
 	return totalFiles, nil
+}
+func checkSudo() error {
+	currentUser, err := user.Current()
+	if err != nil {
+		return fmt.Errorf("error getting current user: %v", err)
+	}
+	uid := currentUser.Uid
+	if uid != "0" {
+		return fmt.Errorf("this program must be run as root. Please use sudo")
+	}
+
+	return nil
 }
